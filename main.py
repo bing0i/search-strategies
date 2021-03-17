@@ -69,5 +69,40 @@ def BFS(data):
     return output
 
 
+def DFS(data):
+    stack = [data["sourceIndex"]]
+    expandedNodes = []
+
+    parentsOfNodes = {}
+    for i in range(data["N"]):
+        parentsOfNodes[i] = []
+
+    while len(stack) > 0:
+        currentNode = stack.pop(-1)
+        expandedNodes.append(currentNode)
+        for node, weight in reversed(list(enumerate(data["matrix"][currentNode]))):
+            if weight != 0 and node not in stack and node not in expandedNodes:
+                if node == data["destinationIndex"]:
+                    parentsOfNodes[node].append(currentNode)
+                    output = {
+                        "stack": stack,
+                        "expandedNodes": expandedNodes,
+                        "parentsOfNodes": parentsOfNodes,
+                        "path": getPath(parentsOfNodes, data["destinationIndex"]),
+                    }
+                    return output
+                stack.append(node)
+                parentsOfNodes[node].append(currentNode)
+
+    output = {
+        "stack": stack,
+        "expandedNodes": expandedNodes,
+        "parentsOfNodes": parentsOfNodes,
+        "path": "No path",
+    }
+    return output
+
+
 data = readInputFile("input.txt")
 writeOutputFile("output.txt", BFS(data))
+print(DFS(data))
