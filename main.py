@@ -1,3 +1,6 @@
+from queue import PriorityQueue
+
+
 def readInputFile(path):
     data = {}
     with open(path, "r") as inputFile:
@@ -24,6 +27,18 @@ def writeOutputFile(path, output):
 
 
 def getPath(parentsOfNodes, destinationIndex):
+    path = [destinationIndex]
+    currentParents = parentsOfNodes[destinationIndex]
+    path.append(currentParents[-1])
+    while currentParents:
+        currentParents = parentsOfNodes[path[-1]]
+        if currentParents:
+            path.append(currentParents[-1])
+    path.reverse()
+    return path
+
+
+def getTotalWeight(parentsOfNodes, destinationIndex):
     path = [destinationIndex]
     currentParents = parentsOfNodes[destinationIndex]
     path.append(currentParents[-1])
@@ -69,6 +84,7 @@ def BFS(data):
     return output
 
 
+# TODO: check against current path to avoid infinite loop
 def DFS(data):
     stack = [data["sourceIndex"]]
     expandedNodes = []
@@ -103,6 +119,56 @@ def DFS(data):
     return output
 
 
+def UCS(data):
+    priorityQueue = PriorityQueue()
+    priorityQueue.put((0, data["sourceIndex"]))
+    expandedNodes = []
+
+    parentsOfNodes = {}
+    for i in range(data["N"]):
+        parentsOfNodes[i] = []
+
+    while not priorityQueue.empty():
+        print(priorityQueue.queue)
+        currentNode = priorityQueue.get()
+        expandedNodes.append(currentNode[1])
+        if currentNode[1] == data["destinationIndex"]:
+            output = {
+                "priorityQueue": priorityQueue.queue,
+                "expandedNodes": expandedNodes,
+                "parentsOfNodes": parentsOfNodes,
+                "path": getPath(parentsOfNodes, data["destinationIndex"]),
+            }
+            return output
+        for node, weight in enumerate(data["matrix"][currentNode[1]]):
+            if weight != 0 and node not in expandedNodes:
+
+                tempNode = (weight + currentNode[0], node)
+                isNodeFound = False
+                for x in priorityQueue.queue:
+                    if tempNode[1] == x[1]:
+                        if tempNode[0] < x[0]:
+                            priorityQueue.queue.remove(x)
+                            priorityQueue.put(tempNode)
+                            parentsOfNodes[node] = [currentNode[1]]
+                        isNodeFound = True
+                        break
+
+                if not isNodeFound:
+                    priorityQueue.put(tempNode)
+                    parentsOfNodes[node].append(currentNode[1])
+                isNodeFound = False
+
+    output = {
+        "priorityQueue": priorityQueue.queue,
+        "expandedNodes": expandedNodes,
+        "parentsOfNodes": parentsOfNodes,
+        "path": "No path",
+    }
+    return output
+
+
 data = readInputFile("input.txt")
 writeOutputFile("output.txt", BFS(data))
-print(DFS(data))
+
+print(UCS(data))
