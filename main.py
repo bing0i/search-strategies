@@ -27,6 +27,8 @@ def writeOutputFile(path, output):
 
 
 def getPath(parentsOfNodes, destinationIndex):
+    if destinationIndex == 0:
+        return [0]
     path = [destinationIndex]
     currentParents = parentsOfNodes[destinationIndex]
     path.append(currentParents[-1])
@@ -84,7 +86,6 @@ def BFS(data):
     return output
 
 
-# TODO: check against current path to avoid infinite loop
 def DFS(data):
     stack = [data["sourceIndex"]]
     expandedNodes = []
@@ -93,22 +94,27 @@ def DFS(data):
     for i in range(data["N"]):
         parentsOfNodes[i] = []
 
+    tempReverseList = []
     while len(stack) > 0:
         currentNode = stack.pop(-1)
         expandedNodes.append(currentNode)
-        for node, weight in reversed(list(enumerate(data["matrix"][currentNode]))):
-            if weight != 0 and node not in stack and node not in expandedNodes:
-                if node == data["destinationIndex"]:
-                    parentsOfNodes[node].append(currentNode)
-                    output = {
-                        "stack": stack,
-                        "expandedNodes": expandedNodes,
-                        "parentsOfNodes": parentsOfNodes,
-                        "path": getPath(parentsOfNodes, data["destinationIndex"]),
-                    }
-                    return output
-                stack.append(node)
+        if currentNode == data["destinationIndex"]:
+            output = {
+                "stack": stack,
+                "expandedNodes": expandedNodes,
+                "parentsOfNodes": parentsOfNodes,
+                "path": getPath(parentsOfNodes, data["destinationIndex"]),
+            }
+            return output
+        for node, weight in enumerate(data["matrix"][currentNode]):
+            if node in getPath(parentsOfNodes, currentNode):
+                continue
+            if weight != 0 and node not in expandedNodes:
+                tempReverseList.append(node)
                 parentsOfNodes[node].append(currentNode)
+
+        stack = stack + list(reversed(tempReverseList))
+        tempReverseList = []
 
     output = {
         "stack": stack,
@@ -171,4 +177,4 @@ def UCS(data):
 data = readInputFile("input.txt")
 writeOutputFile("output.txt", BFS(data))
 
-print(UCS(data))
+print(DFS(data))
