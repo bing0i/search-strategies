@@ -135,7 +135,6 @@ def UCS(data):
         parentsOfNodes[i] = []
 
     while not priorityQueue.empty():
-        print(priorityQueue.queue)
         currentNode = priorityQueue.get()
         expandedNodes.append(currentNode[1])
         if currentNode[1] == data["destinationIndex"]:
@@ -174,7 +173,48 @@ def UCS(data):
     return output
 
 
+def GBFS(data):
+    priorityQueue = PriorityQueue()
+    priorityQueue.put(
+        (data["heuristicValues"][data["sourceIndex"]], data["sourceIndex"])
+    )
+    expandedNodes = []
+
+    parentsOfNodes = {}
+    for i in range(data["N"]):
+        parentsOfNodes[i] = []
+
+    while not priorityQueue.empty():
+        currentNode = priorityQueue.get()
+        expandedNodes.append(currentNode[1])
+        for node, weight in enumerate(data["matrix"][currentNode[1]]):
+            if (
+                weight != 0
+                and node not in expandedNodes
+                and not [item for item in priorityQueue.queue if item[1] == node]
+            ):
+                if node == data["destinationIndex"]:
+                    parentsOfNodes[node].append(currentNode[1])
+                    output = {
+                        "priorityQueue": priorityQueue.queue,
+                        "expandedNodes": expandedNodes,
+                        "parentsOfNodes": parentsOfNodes,
+                        "path": getPath(parentsOfNodes, data["destinationIndex"]),
+                    }
+                    return output
+                priorityQueue.put((data["heuristicValues"][node], node))
+                parentsOfNodes[node].append(currentNode[1])
+
+    output = {
+        "priorityQueue": priorityQueue.queue,
+        "expandedNodes": expandedNodes,
+        "parentsOfNodes": parentsOfNodes,
+        "path": "No path",
+    }
+    return output
+
+
 data = readInputFile("input.txt")
 writeOutputFile("output.txt", BFS(data))
 
-print(DFS(data))
+print(GBFS(data))
