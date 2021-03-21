@@ -173,6 +173,76 @@ def UCS(data):
     return output
 
 
+def IDS(data):
+    maxDepth = data["N"] - 1
+    currentDepth = 0
+
+    stack = [data["sourceIndex"]]
+    expandedNodes = []
+
+    parentsOfNodes = {}
+    for i in range(data["N"]):
+        parentsOfNodes[i] = []
+
+    depthOfNodes = {}
+    for i in range(data["N"]):
+        depthOfNodes[i] = -1
+
+    tempReverseList = []
+    while currentDepth <= maxDepth:
+        stack = [data["sourceIndex"]]
+        expandedNodes = []
+
+        parentsOfNodes = {}
+        for i in range(data["N"]):
+            parentsOfNodes[i] = []
+
+        depthOfNodes = {}
+        for i in range(data["N"]):
+            depthOfNodes[i] = -1
+        while len(stack) > 0:
+            currentNode = stack.pop(-1)
+            expandedNodes.append(currentNode)
+            if len(expandedNodes) == 1:
+                depthOfNodes[currentNode] = 0
+            else:
+                depthOfNodes[currentNode] = (
+                    depthOfNodes[parentsOfNodes[currentNode][0]] + 1
+                )
+            if currentNode == data["destinationIndex"]:
+                output = {
+                    "stack": stack,
+                    "expandedNodes": expandedNodes,
+                    "parentsOfNodes": parentsOfNodes,
+                    "path": getPath(parentsOfNodes, data["destinationIndex"]),
+                    "depthOfNodes": depthOfNodes,
+                }
+                return output
+            if depthOfNodes[currentNode] >= currentDepth:
+                if len(stack) > 0:
+                    if depthOfNodes[parentsOfNodes[stack[-1]][0]] + 1 <= maxDepth:
+                        continue
+                else:
+                    break
+            for node, weight in enumerate(data["matrix"][currentNode]):
+                if weight != 0 and node not in expandedNodes and node not in stack:
+                    tempReverseList.append(node)
+                    parentsOfNodes[node].append(currentNode)
+
+            stack = stack + list(reversed(tempReverseList))
+            tempReverseList = []
+        currentDepth += 1
+
+    output = {
+        "stack": stack,
+        "expandedNodes": expandedNodes,
+        "parentsOfNodes": parentsOfNodes,
+        "path": "No path",
+        "depthOfNodes": depthOfNodes,
+    }
+    return output
+
+
 def GBFS(data):
     priorityQueue = PriorityQueue()
     priorityQueue.put(
