@@ -107,8 +107,6 @@ def DFS(data):
             }
             return output
         for node, weight in enumerate(data["matrix"][currentNode]):
-            if node in getPath(parentsOfNodes, currentNode):
-                continue
             if weight != 0 and node not in expandedNodes:
                 tempReverseList.append(node)
                 parentsOfNodes[node].append(currentNode)
@@ -337,5 +335,25 @@ def AStar(data):
     return output
 
 
-data = readInputFile("input.txt")
-writeOutputFile("output.txt", BFS(data))
+def main():
+    data = readInputFile("input.txt")
+
+    chosenSearchStrategy = data["searchStrategy"]
+    output = {}
+    if chosenSearchStrategy == 0:
+        output = BFS(data)
+    elif chosenSearchStrategy == 1:
+        output = DFS(data)
+    elif chosenSearchStrategy == 2:
+        output = UCS(data)
+    elif chosenSearchStrategy == 3:
+        output = IDS(data)
+    elif chosenSearchStrategy == 4:
+        output = GBFS(data)
+    elif chosenSearchStrategy == 5:
+        output = AStar(data)
+
+    writeOutputFile("output.txt", output)
+
+
+main()
